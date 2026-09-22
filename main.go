@@ -59,6 +59,14 @@ func main() {
 	mux.HandleFunc("POST /columns", columnHandler.CreateColumn)
 	mux.HandleFunc("GET /columns", columnHandler.ListColumns)
 
+	boardHandler := &handlers.BoardHandler{Store: dbStore}
+
+	// Board Routes
+	mux.HandleFunc("POST /boards", boardHandler.CreateBoard)
+	mux.HandleFunc("GET /boards", boardHandler.ListBoards)
+	mux.HandleFunc("GET /boards/{id}", boardHandler.GetBoard)
+	mux.HandleFunc("DELETE /boards/{id}", boardHandler.DeleteBoard)
+
 	fmt.Println("Server running on http://localhost:8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		fmt.Printf("Server failed to start: %v\n", err)

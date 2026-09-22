@@ -35,7 +35,12 @@ func (h *ColumnHandler) CreateColumn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ColumnHandler) ListColumns(w http.ResponseWriter, r *http.Request) {
-	columns, err := h.Store.GetColumnsWithCards()
+	boardID := r.URL.Query().Get("board_id")
+	if boardID == "" {
+		boardID = "board-1" // Default board fallback
+	}
+
+	columns, err := h.Store.GetColumnsWithCards(boardID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

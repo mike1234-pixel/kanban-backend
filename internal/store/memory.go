@@ -7,6 +7,7 @@ import (
 )
 
 type Store interface {
+	// Card operations
 	SaveCard(card models.Card) error
 	GetCards() ([]models.Card, error)
 	GetCardByID(id string) (models.Card, error)
@@ -15,9 +16,15 @@ type Store interface {
 
 	// Column operations
 	SaveColumn(col models.Column) error
-	GetColumnsWithCards() ([]models.Column, error) // <-- MAKE SURE THIS LINE IS PRESENT
+	GetColumnsWithCards(boardID string) ([]models.Column, error) // <-- Update signature here
 	GetColumnByID(id string) (models.Column, error)
 	DeleteColumn(id string) (bool, error)
+
+	// Board operations
+	SaveBoard(board models.Board) error
+	GetBoards() ([]models.Board, error)
+	GetBoardByID(id string) (models.Board, error)
+	DeleteBoard(id string) (bool, error)
 }
 
 // this whole block would be a class in TS

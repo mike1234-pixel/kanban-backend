@@ -28,6 +28,8 @@ func NewPostgresStore(connStr string) (*PostgresStore, error) {
 	return &PostgresStore{db: db}, nil
 }
 
+//#region Cards
+
 // SaveCard inserts a new card into the database
 func (s *PostgresStore) SaveCard(card models.Card) error {
 	query := `
@@ -117,29 +119,33 @@ func (s *PostgresStore) DeleteCard(id string) (bool, error) {
 	return rowsAffected > 0, nil
 }
 
+//#endregion
+
+//#region Columns
+
 func (s *PostgresStore) SaveColumn(col models.Column) error {
-	query := `INSERT INTO columns (id, title, position) VALUES ($1, $2, $3)`
-	_, err := s.db.Exec(query, col.ID, col.Title, col.Position)
+	query := `INSERT INTO columns (id, board_id, title, position) VALUES ($1, $2, $3, $4)`
+	_, err := s.db.Exec(query, col.ID, col.BoardID, col.Title, col.Position)
 	return err
 }
 
 // GetColumnsWithCards performs a two-step load to construct the full board hierarchy
-func (s *PostgresStore) GetColumnsWithCards() ([]models.Column, error) {
-	// 1. Fetch all columns
-	colQuery := `SELECT id, title, position FROM columns ORDER BY position ASC`
-	colRows, err := s.db.Query(colQuery)
+func (s *PostgresStore) GetColumnsWithCards(boardID string) ([]models.Column, error) {
+	// 1. Fetch columns filtered by board_id
+	colQuery := `SELECT id, board_id, title, position FROM columns WHERE board_id = $1 ORDER BY position ASC`
+	colRows, err := s.db.Query(colQuery, boardID)
 	if err != nil {
 		return nil, err
 	}
 	defer colRows.Close()
 
 	var columns []models.Column
-	colMap := make(map[string]int) // Maps column ID to index in slice
+	colMap := make(map[string]int)
 
 	for colRows.Next() {
 		var c models.Column
-		c.Cards = []models.Card{} // Guarantee non-nil JSON array ([])
-		if err := colRows.Scan(&c.ID, &c.Title, &c.Position); err != nil {
+		c.Cards = []models.Card{}
+		if err := colRows.Scan(&c.ID, &c.BoardID, &c.Title, &c.Position); err != nil {
 			return nil, err
 		}
 		colMap[c.ID] = len(columns)
@@ -149,7 +155,11 @@ func (s *PostgresStore) GetColumnsWithCards() ([]models.Column, error) {
 		return nil, err
 	}
 
-	// 2. Fetch all cards and distribute them to their respective columns
+	if len(columns) == 0 {
+		return []models.Column{}, nil
+	}
+
+	// 2. Fetch cards
 	cardQuery := `SELECT id, column_id, title, description, "order" FROM cards ORDER BY "order" ASC`
 	cardRows, err := s.db.Query(cardQuery)
 	if err != nil {
@@ -166,11 +176,8 @@ func (s *PostgresStore) GetColumnsWithCards() ([]models.Column, error) {
 			columns[idx].Cards = append(columns[idx].Cards, card)
 		}
 	}
-	if err := cardRows.Err(); err != nil {
-		return nil, err
-	}
 
-	return columns, nil
+	return columns, cardRows.Err()
 }
 
 func (s *PostgresStore) GetColumnByID(id string) (models.Column, error) {
@@ -195,3 +202,67 @@ func (s *PostgresStore) DeleteColumn(id string) (bool, error) {
 	rows, err := res.RowsAffected()
 	return rows > 0, err
 }
+
+//#endregion
+
+//#region Boards
+
+func (s *PostgresStore) SaveBoard(board models.Board) error {
+	query := `INSERT INTO boards (id, title) VALUES ($1, $2)`
+	_, err := s.db.Exec(query, board.ID, board.Title)
+	return err
+}
+
+func (s *PostgresStore) GetBoards() ([]models.Board, error) {
+	query := `SELECT id, title, created_at FROM boards ORDER BY created_at DESC`
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var boards []models.Board
+	for rows.Next() {
+		var b models.Board
+		b.Columns = []models.Column{}
+		if err := rows.Scan(&b.ID, &b.Title, &b.CreatedAt); err != nil {
+			return nil, err
+		}
+		boards = append(boards, b)
+	}
+	return boards, rows.Err()
+}
+
+func (s *PostgresStore) GetBoardByID(id string) (models.Board, error) {
+	// 1. Fetch Board
+	var b models.Board
+	query := `SELECT id, title, created_at FROM boards WHERE id = $1`
+	err := s.db.QueryRow(query, id).Scan(&b.ID, &b.Title, &b.CreatedAt)
+	if err == sql.ErrNoRows {
+		return models.Board{}, nil
+	}
+	if err != nil {
+		return models.Board{}, err
+	}
+
+	// 2. Load nested Columns with Cards
+	cols, err := s.GetColumnsWithCards(b.ID)
+	if err != nil {
+		return models.Board{}, err
+	}
+	b.Columns = cols
+
+	return b, nil
+}
+
+func (s *PostgresStore) DeleteBoard(id string) (bool, error) {
+	query := `DELETE FROM boards WHERE id = $1`
+	res, err := s.db.Exec(query, id)
+	if err != nil {
+		return false, err
+	}
+	rows, err := res.RowsAffected()
+	return rows > 0, err
+}
+
+//#endregion

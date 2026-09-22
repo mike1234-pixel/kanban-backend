@@ -3,16 +3,18 @@ package models
 import "time"
 
 type Board struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	Columns   []Column  `json:"columns"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
 type Column struct {
 	ID        string    `json:"id"`
-	BoardID   string    `json:"board_id,omitempty"`
+	BoardID   string    `json:"board_id"`
 	Title     string    `json:"title"`
 	Position  int       `json:"position"`
-	Cards     []Card    `json:"cards,omitempty"` // Included when fetching column details
+	Cards     []Card    `json:"cards"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
