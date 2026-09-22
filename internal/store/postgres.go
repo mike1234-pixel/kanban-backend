@@ -116,3 +116,82 @@ func (s *PostgresStore) DeleteCard(id string) (bool, error) {
 
 	return rowsAffected > 0, nil
 }
+
+func (s *PostgresStore) SaveColumn(col models.Column) error {
+	query := `INSERT INTO columns (id, title, position) VALUES ($1, $2, $3)`
+	_, err := s.db.Exec(query, col.ID, col.Title, col.Position)
+	return err
+}
+
+// GetColumnsWithCards performs a two-step load to construct the full board hierarchy
+func (s *PostgresStore) GetColumnsWithCards() ([]models.Column, error) {
+	// 1. Fetch all columns
+	colQuery := `SELECT id, title, position FROM columns ORDER BY position ASC`
+	colRows, err := s.db.Query(colQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer colRows.Close()
+
+	var columns []models.Column
+	colMap := make(map[string]int) // Maps column ID to index in slice
+
+	for colRows.Next() {
+		var c models.Column
+		c.Cards = []models.Card{} // Guarantee non-nil JSON array ([])
+		if err := colRows.Scan(&c.ID, &c.Title, &c.Position); err != nil {
+			return nil, err
+		}
+		colMap[c.ID] = len(columns)
+		columns = append(columns, c)
+	}
+	if err := colRows.Err(); err != nil {
+		return nil, err
+	}
+
+	// 2. Fetch all cards and distribute them to their respective columns
+	cardQuery := `SELECT id, column_id, title, description, "order" FROM cards ORDER BY "order" ASC`
+	cardRows, err := s.db.Query(cardQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer cardRows.Close()
+
+	for cardRows.Next() {
+		var card models.Card
+		if err := cardRows.Scan(&card.ID, &card.ColumnID, &card.Title, &card.Description, &card.Order); err != nil {
+			return nil, err
+		}
+		if idx, exists := colMap[card.ColumnID]; exists {
+			columns[idx].Cards = append(columns[idx].Cards, card)
+		}
+	}
+	if err := cardRows.Err(); err != nil {
+		return nil, err
+	}
+
+	return columns, nil
+}
+
+func (s *PostgresStore) GetColumnByID(id string) (models.Column, error) {
+	query := `SELECT id, title, position FROM columns WHERE id = $1`
+	var c models.Column
+	err := s.db.QueryRow(query, id).Scan(&c.ID, &c.Title, &c.Position)
+	if err == sql.ErrNoRows {
+		return models.Column{}, nil
+	}
+	if err != nil {
+		return models.Column{}, err
+	}
+	return c, nil
+}
+
+func (s *PostgresStore) DeleteColumn(id string) (bool, error) {
+	query := `DELETE FROM columns WHERE id = $1`
+	res, err := s.db.Exec(query, id)
+	if err != nil {
+		return false, err
+	}
+	rows, err := res.RowsAffected()
+	return rows > 0, err
+}

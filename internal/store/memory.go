@@ -12,6 +12,12 @@ type Store interface {
 	GetCardByID(id string) (models.Card, error)
 	UpdateCard(id string, updated models.Card) (bool, error)
 	DeleteCard(id string) (bool, error)
+
+	// Column operations
+	SaveColumn(col models.Column) error
+	GetColumnsWithCards() ([]models.Column, error) // <-- MAKE SURE THIS LINE IS PRESENT
+	GetColumnByID(id string) (models.Column, error)
+	DeleteColumn(id string) (bool, error)
 }
 
 // this whole block would be a class in TS

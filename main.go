@@ -54,6 +54,11 @@ func main() {
 	mux.HandleFunc("PUT /cards/{id}", cardHandler.UpdateCard)
 	mux.HandleFunc("DELETE /cards/{id}", cardHandler.DeleteCard)
 
+	columnHandler := &handlers.ColumnHandler{Store: dbStore}
+
+	mux.HandleFunc("POST /columns", columnHandler.CreateColumn)
+	mux.HandleFunc("GET /columns", columnHandler.ListColumns)
+
 	fmt.Println("Server running on http://localhost:8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		fmt.Printf("Server failed to start: %v\n", err)
