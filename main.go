@@ -13,31 +13,20 @@ import (
 )
 
 func main() {
-	// 1. Load environment variables from .env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("Warning: .env file not found, relying on environment variables")
 	}
 
-	// 2. Fetch connection details from environment variables
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
+	dbSSLMode := os.Getenv("DB_SSLMODE")
 
-	// Fallbacks for local dev if env vars aren't set
-	if dbHost == "" {
-		dbHost = "localhost"
-	}
-	if dbPort == "" {
-		dbPort = "5432"
-	}
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		dbUser, dbPassword, dbHost, dbPort, dbName, dbSSLMode)
 
-	// 3. Format connection string dynamically
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		dbUser, dbPassword, dbHost, dbPort, dbName)
-
-	// 4. Initialize PostgresStore
 	dbStore, err := store.NewPostgresStore(connStr)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -61,13 +50,13 @@ func main() {
 
 	boardHandler := &handlers.BoardHandler{Store: dbStore}
 
-	// Board Routes
 	mux.HandleFunc("POST /boards", boardHandler.CreateBoard)
 	mux.HandleFunc("GET /boards", boardHandler.ListBoards)
 	mux.HandleFunc("GET /boards/{id}", boardHandler.GetBoard)
 	mux.HandleFunc("DELETE /boards/{id}", boardHandler.DeleteBoard)
 
 	fmt.Println("Server running on http://localhost:8080")
+
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		fmt.Printf("Server failed to start: %v\n", err)
 	}
