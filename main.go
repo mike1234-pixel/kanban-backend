@@ -9,6 +9,7 @@ import (
 	"kanban-backend/internal/handlers"
 	"kanban-backend/internal/store"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 )
 
@@ -28,12 +29,15 @@ func main() {
 		dbUser, dbPassword, dbHost, dbPort, dbName, dbSSLMode)
 
 	dbStore, err := store.NewPostgresStore(connStr)
+	validate := validator.New()
+
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
 	cardHandler := &handlers.CardHandler{
-		Store: dbStore,
+		Store:    dbStore,
+		Validate: validate,
 	}
 
 	mux := http.NewServeMux()
@@ -43,12 +47,12 @@ func main() {
 	mux.HandleFunc("PUT /cards/{id}", cardHandler.UpdateCard)
 	mux.HandleFunc("DELETE /cards/{id}", cardHandler.DeleteCard)
 
-	columnHandler := &handlers.ColumnHandler{Store: dbStore}
+	columnHandler := &handlers.ColumnHandler{Store: dbStore, Validate: validate}
 
 	mux.HandleFunc("POST /columns", columnHandler.CreateColumn)
 	mux.HandleFunc("GET /columns", columnHandler.ListColumns)
 
-	boardHandler := &handlers.BoardHandler{Store: dbStore}
+	boardHandler := &handlers.BoardHandler{Store: dbStore, Validate: validate}
 
 	mux.HandleFunc("POST /boards", boardHandler.CreateBoard)
 	mux.HandleFunc("GET /boards", boardHandler.ListBoards)

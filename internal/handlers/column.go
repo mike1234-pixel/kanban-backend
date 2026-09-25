@@ -6,10 +6,13 @@ import (
 
 	"kanban-backend/internal/models"
 	"kanban-backend/internal/store"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type ColumnHandler struct {
-	Store store.Store
+	Store    store.Store
+	Validate *validator.Validate
 }
 
 func (h *ColumnHandler) CreateColumn(w http.ResponseWriter, r *http.Request) {
@@ -19,8 +22,9 @@ func (h *ColumnHandler) CreateColumn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if col.ID == "" || col.Title == "" {
-		http.Error(w, "id and title are required", http.StatusBadRequest)
+	// Validate struct fields using go-playground/validator
+	if err := h.Validate.Struct(col); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -37,7 +41,8 @@ func (h *ColumnHandler) CreateColumn(w http.ResponseWriter, r *http.Request) {
 func (h *ColumnHandler) ListColumns(w http.ResponseWriter, r *http.Request) {
 	boardID := r.URL.Query().Get("board_id")
 	if boardID == "" {
-		boardID = "board-1" // Default board fallback
+		http.Error(w, "board_id query parameter is required", http.StatusBadRequest)
+		return
 	}
 
 	columns, err := h.Store.GetColumnsWithCards(boardID)

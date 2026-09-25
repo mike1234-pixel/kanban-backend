@@ -6,11 +6,14 @@ import (
 
 	"kanban-backend/internal/models"
 	"kanban-backend/internal/store"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // CardHandler holds dependencies needed by HTTP routes
 type CardHandler struct {
-	Store store.Store
+	Store    store.Store
+	Validate *validator.Validate
 }
 
 // CreateCard handles POST /cards
@@ -23,13 +26,19 @@ func (h *CardHandler) CreateCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 2. Save card to store and check for errors
+	// 2. Validate struct rules
+	if err := h.Validate.Struct(card); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// 3. Save card to store and check for errors
 	if err := h.Store.SaveCard(card); err != nil {
 		http.Error(w, "Failed to save card", http.StatusInternalServerError)
 		return
 	}
 
-	// 3. Return JSON response with 201 Created status
+	// 4. Return JSON response with 201 Created status
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(card)
@@ -37,21 +46,18 @@ func (h *CardHandler) CreateCard(w http.ResponseWriter, r *http.Request) {
 
 // ListCards handles GET /cards
 func (h *CardHandler) ListCards(w http.ResponseWriter, r *http.Request) {
-	// 1. Fetch cards from store
 	cards, err := h.Store.GetCards()
 	if err != nil {
 		http.Error(w, "Failed to fetch cards", http.StatusInternalServerError)
 		return
 	}
 
-	// 2. Return cards as JSON with 200 OK
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(cards)
 }
 
 // GetCard handles GET /cards/{id}
 func (h *CardHandler) GetCard(w http.ResponseWriter, r *http.Request) {
-	// r.PathValue extracts wildcards matched in the route pattern (Go 1.22+)
 	id := r.PathValue("id")
 
 	card, err := h.Store.GetCardByID(id)
@@ -78,7 +84,13 @@ func (h *CardHandler) UpdateCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 1. Update the card in the store
+	// 1. Validate incoming card payload
+	if err := h.Validate.Struct(card); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// 2. Update the card in the store
 	success, err := h.Store.UpdateCard(id, card)
 	if err != nil {
 		http.Error(w, "Failed to update card", http.StatusInternalServerError)
@@ -89,7 +101,7 @@ func (h *CardHandler) UpdateCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 2. Fetch updated card to return in response
+	// 3. Fetch updated card to return in response
 	updatedCard, err := h.Store.GetCardByID(id)
 	if err != nil {
 		http.Error(w, "Failed to fetch updated card", http.StatusInternalServerError)
@@ -114,5 +126,5 @@ func (h *CardHandler) DeleteCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent) // 204 No Content
+	w.WriteHeader(http.StatusNoContent)
 }

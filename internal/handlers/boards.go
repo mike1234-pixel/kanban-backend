@@ -6,21 +6,25 @@ import (
 
 	"kanban-backend/internal/models"
 	"kanban-backend/internal/store"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type BoardHandler struct {
-	Store store.Store
+	Store    store.Store
+	Validate *validator.Validate
 }
 
 func (h *BoardHandler) CreateBoard(w http.ResponseWriter, r *http.Request) {
 	var board models.Board
+
 	if err := json.NewDecoder(r.Body).Decode(&board); err != nil {
 		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
 		return
 	}
 
-	if board.ID == "" || board.Title == "" {
-		http.Error(w, "id and title are required", http.StatusBadRequest)
+	if err := h.Validate.Struct(board); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -53,6 +57,7 @@ func (h *BoardHandler) GetBoard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	if board.ID == "" {
 		http.Error(w, "Board not found", http.StatusNotFound)
 		return
