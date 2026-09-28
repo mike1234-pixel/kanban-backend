@@ -15,6 +15,7 @@ type ColumnHandler struct {
 	Validate *validator.Validate
 }
 
+// #region Create Column
 func (h *ColumnHandler) CreateColumn(w http.ResponseWriter, r *http.Request) {
 	var col models.Column
 	if err := json.NewDecoder(r.Body).Decode(&col); err != nil {
@@ -22,7 +23,6 @@ func (h *ColumnHandler) CreateColumn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate struct fields using go-playground/validator
 	if err := h.Validate.Struct(col); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -38,6 +38,9 @@ func (h *ColumnHandler) CreateColumn(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(col)
 }
 
+//#endregion
+
+// #region List Columns
 func (h *ColumnHandler) ListColumns(w http.ResponseWriter, r *http.Request) {
 	boardID := r.URL.Query().Get("board_id")
 	if boardID == "" {
@@ -54,3 +57,5 @@ func (h *ColumnHandler) ListColumns(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(columns)
 }
+
+//#endregion

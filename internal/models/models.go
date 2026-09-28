@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// #region Board
 type Board struct {
 	ID        string    `json:"id" validate:"required,uuid"`
 	Title     string    `json:"title" validate:"required,min=3,max=100"`
@@ -9,6 +10,9 @@ type Board struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
+//#endregion
+
+// #region Column
 type Column struct {
 	ID        string    `json:"id" validate:"required,uuid"`
 	BoardID   string    `json:"board_id" validate:"required,uuid"`
@@ -18,6 +22,9 @@ type Column struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
+//#endregion
+
+// #region Card
 type Card struct {
 	ID          string `json:"id" validate:"required,uuid"`
 	ColumnID    string `json:"column_id" validate:"required,uuid"`
@@ -25,3 +32,5 @@ type Card struct {
 	Description string `json:"description" validate:"max=1000"`
 	Order       int    `json:"order" validate:"gte=0"`
 }
+
+//#endregion

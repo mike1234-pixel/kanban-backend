@@ -15,6 +15,7 @@ type BoardHandler struct {
 	Validate *validator.Validate
 }
 
+// #region Create Board
 func (h *BoardHandler) CreateBoard(w http.ResponseWriter, r *http.Request) {
 	var board models.Board
 
@@ -38,6 +39,9 @@ func (h *BoardHandler) CreateBoard(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(board)
 }
 
+// #endregion
+
+// #region List Boards
 func (h *BoardHandler) ListBoards(w http.ResponseWriter, r *http.Request) {
 	boards, err := h.Store.GetBoards()
 	if err != nil {
@@ -49,6 +53,9 @@ func (h *BoardHandler) ListBoards(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(boards)
 }
 
+// #endregion
+
+// #region Get Board
 func (h *BoardHandler) GetBoard(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
@@ -67,6 +74,9 @@ func (h *BoardHandler) GetBoard(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(board)
 }
 
+// #endregion
+
+// #region Delete Board
 func (h *BoardHandler) DeleteBoard(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
@@ -82,3 +92,5 @@ func (h *BoardHandler) DeleteBoard(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+//#endregion

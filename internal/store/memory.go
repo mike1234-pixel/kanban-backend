@@ -42,7 +42,7 @@ func NewMemoryStore() *MemoryStore {
 	}
 }
 
-// Card operations
+// #region Cards
 func (s *MemoryStore) SaveCard(card models.Card) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -98,7 +98,9 @@ func (s *MemoryStore) DeleteCard(id string) (bool, error) {
 	return true, nil
 }
 
-// Column operations
+//#endregion
+
+// #region Columns
 func (s *MemoryStore) SaveColumn(col models.Column) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -151,7 +153,9 @@ func (s *MemoryStore) DeleteColumn(id string) (bool, error) {
 	return true, nil
 }
 
-// Board operations
+//#endregion
+
+// #region Boards
 func (s *MemoryStore) SaveBoard(board models.Board) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -193,3 +197,5 @@ func (s *MemoryStore) DeleteBoard(id string) (bool, error) {
 	delete(s.boards, id)
 	return true, nil
 }
+
+//#endregion
