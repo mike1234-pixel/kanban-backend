@@ -41,7 +41,6 @@ func (s *PostgresStore) SaveCard(card models.Card) error {
 }
 
 // GetCards fetches all cards from the database
-// GetCards fetches all cards from the database
 func (s *PostgresStore) GetCards() ([]models.Card, error) {
 	query := `SELECT id, column_id, title, description, "order" FROM cards`
 	rows, err := s.db.Query(query)

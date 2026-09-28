@@ -59,3 +59,28 @@ func (h *ColumnHandler) ListColumns(w http.ResponseWriter, r *http.Request) {
 }
 
 //#endregion
+
+// #region Delete Column
+func (h *ColumnHandler) DeleteColumn(w http.ResponseWriter, r *http.Request) {
+	// Extract 'id' from path parameter (Go 1.22+ net/http pattern routing)
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "Column ID is required", http.StatusBadRequest)
+		return
+	}
+
+	deleted, err := h.Store.DeleteColumn(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if !deleted {
+		http.Error(w, "Column not found", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+//#endregion
