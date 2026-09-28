@@ -18,6 +18,7 @@ type Store interface {
 	SaveColumn(col models.Column) error
 	GetColumnsWithCards(boardID string) ([]models.Column, error)
 	GetColumnByID(id string) (models.Column, error)
+	UpdateColumn(col models.Column) (bool, error)
 	DeleteColumn(id string) (bool, error)
 
 	// Board operations

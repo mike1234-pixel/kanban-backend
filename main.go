@@ -51,6 +51,8 @@ func main() {
 
 	mux.HandleFunc("POST /columns", columnHandler.CreateColumn)
 	mux.HandleFunc("GET /columns", columnHandler.ListColumns)
+	mux.HandleFunc("GET /columns/{id}", columnHandler.GetColumn)
+	mux.HandleFunc("PUT /columns/{id}", columnHandler.UpdateColumn)
 	mux.HandleFunc("DELETE /columns/{id}", columnHandler.DeleteColumn)
 
 	boardHandler := &handlers.BoardHandler{Store: dbStore, Validate: validate}

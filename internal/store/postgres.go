@@ -180,9 +180,9 @@ func (s *PostgresStore) GetColumnsWithCards(boardID string) ([]models.Column, er
 }
 
 func (s *PostgresStore) GetColumnByID(id string) (models.Column, error) {
-	query := `SELECT id, title, position FROM columns WHERE id = $1`
+	query := `SELECT id, board_id, title, position, created_at FROM columns WHERE id = $1`
 	var c models.Column
-	err := s.db.QueryRow(query, id).Scan(&c.ID, &c.Title, &c.Position)
+	err := s.db.QueryRow(query, id).Scan(&c.ID, &c.BoardID, &c.Title, &c.Position, &c.CreatedAt)
 	if err == sql.ErrNoRows {
 		return models.Column{}, nil
 	}
@@ -190,6 +190,21 @@ func (s *PostgresStore) GetColumnByID(id string) (models.Column, error) {
 		return models.Column{}, err
 	}
 	return c, nil
+}
+
+func (s *PostgresStore) UpdateColumn(col models.Column) (bool, error) {
+	query := `
+		UPDATE columns 
+		SET title = $1, position = $2 
+		WHERE id = $3
+	`
+	res, err := s.db.Exec(query, col.Title, col.Position, col.ID)
+	if err != nil {
+		return false, err
+	}
+
+	rows, err := res.RowsAffected()
+	return rows > 0, err
 }
 
 func (s *PostgresStore) DeleteColumn(id string) (bool, error) {
