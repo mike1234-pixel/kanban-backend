@@ -60,6 +60,7 @@ func main() {
 	mux.HandleFunc("POST /boards", boardHandler.CreateBoard)
 	mux.HandleFunc("GET /boards", boardHandler.ListBoards)
 	mux.HandleFunc("GET /boards/{id}", boardHandler.GetBoard)
+	mux.HandleFunc("PUT /boards/{id}", boardHandler.UpdateBoard)
 	mux.HandleFunc("DELETE /boards/{id}", boardHandler.DeleteBoard)
 
 	fmt.Println("Server running on http://localhost:8080")

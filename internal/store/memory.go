@@ -25,6 +25,7 @@ type Store interface {
 	SaveBoard(board models.Board) error
 	GetBoards() ([]models.Board, error)
 	GetBoardByID(id string) (models.Board, error)
+	UpdateBoard(board models.Board) (bool, error)
 	DeleteBoard(id string) (bool, error)
 }
 

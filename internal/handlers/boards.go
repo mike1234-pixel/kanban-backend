@@ -76,6 +76,56 @@ func (h *BoardHandler) GetBoard(w http.ResponseWriter, r *http.Request) {
 
 // #endregion
 
+// #region Update Board
+func (h *BoardHandler) UpdateBoard(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "Board ID is required", http.StatusBadRequest)
+		return
+	}
+
+	existingBoard, err := h.Store.GetBoardByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if existingBoard.ID == "" {
+		http.Error(w, "Board not found", http.StatusNotFound)
+		return
+	}
+
+	var payload struct {
+		Title string `json:"title" validate:"required,min=1,max=100"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.Validate.Struct(payload); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	existingBoard.Title = payload.Title
+
+	updated, err := h.Store.UpdateBoard(existingBoard)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !updated {
+		http.Error(w, "Board not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(existingBoard)
+}
+
+//#endregion
+
 // #region Delete Board
 func (h *BoardHandler) DeleteBoard(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")

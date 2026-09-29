@@ -269,6 +269,17 @@ func (s *PostgresStore) GetBoardByID(id string) (models.Board, error) {
 	return b, nil
 }
 
+func (s *PostgresStore) UpdateBoard(board models.Board) (bool, error) {
+	query := `UPDATE boards SET title = $1 WHERE id = $2`
+	res, err := s.db.Exec(query, board.Title, board.ID)
+	if err != nil {
+		return false, err
+	}
+
+	rows, err := res.RowsAffected()
+	return rows > 0, err
+}
+
 func (s *PostgresStore) DeleteBoard(id string) (bool, error) {
 	query := `DELETE FROM boards WHERE id = $1`
 	res, err := s.db.Exec(query, id)
