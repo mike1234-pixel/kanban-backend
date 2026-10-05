@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"kanban-backend/internal/models"
 
@@ -14,13 +15,20 @@ type PostgresStore struct {
 }
 
 func NewPostgresStore(connStr string) (*PostgresStore, error) {
-	// 1. sql.Open initializes the connection pool manager (no TCP handshake yet)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
 	}
 
-	// 2. Ping forces an actual TCP connection to PostgreSQL on port 5432
+	// 1. Cap active connections to prevent crashing Postgres
+	db.SetMaxOpenConns(25)
+
+	// 2. Keep warm connections ready so incoming requests don't wait for TCP handshakes
+	db.SetMaxIdleConns(10)
+
+	// 3. Retire old connections to clear stale state and handle DB restarts gracefully
+	db.SetConnMaxLifetime(5 * time.Minute)
+
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping postgres: %w", err)
 	}
