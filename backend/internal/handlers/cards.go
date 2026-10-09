@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"kanban-backend/internal/models"
-	"kanban-backend/internal/store"
+	"kanban/internal/models"
+	"kanban/internal/store"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -130,3 +130,28 @@ func (h *CardHandler) DeleteCard(w http.ResponseWriter, r *http.Request) {
 }
 
 //# endregion
+
+func (h *CardHandler) MoveCard(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		ColumnID string `json:"column_id" validate:"required,uuid"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
+		return
+	}
+	if err := h.Validate.Struct(request); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	moved, err := h.Store.MoveCard(r.PathValue("id"), request.ColumnID)
+	if err != nil {
+		http.Error(w, "Failed to move card", http.StatusInternalServerError)
+		return
+	}
+	if !moved {
+		http.Error(w, "Card not found", http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

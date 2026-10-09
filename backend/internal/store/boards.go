@@ -2,7 +2,7 @@ package store
 
 import (
 	"database/sql"
-	"kanban-backend/internal/models"
+	"kanban/internal/models"
 )
 
 // #region Save Board

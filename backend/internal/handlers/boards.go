@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"kanban-backend/internal/models"
-	"kanban-backend/internal/store"
+	"kanban/internal/models"
+	"kanban/internal/store"
 
 	"github.com/go-playground/validator/v10"
 )

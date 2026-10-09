@@ -1,9 +1,10 @@
 package store
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
-	"kanban-backend/internal/models"
+	"kanban/internal/models"
 )
 
 func (s *PostgresStore) SaveCard(card models.Card) error {
@@ -93,6 +94,34 @@ func (s *PostgresStore) UpdateCard(id string, updated models.Card) (bool, error)
 	}
 
 	return rowsAffected > 0, nil
+}
+
+// MoveCard changes a card's column and records the move atomically.
+func (s *PostgresStore) MoveCard(id string, columnID string) (bool, error) {
+	tx, err := s.db.BeginTx(context.Background(), nil)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+
+	var fromColumnID string
+	err = tx.QueryRow(`SELECT column_id FROM cards WHERE id = $1 FOR UPDATE`, id).Scan(&fromColumnID)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if _, err := tx.Exec(`UPDATE cards SET column_id = $1 WHERE id = $2`, columnID, id); err != nil {
+		return false, err
+	}
+	if _, err := tx.Exec(`INSERT INTO card_movements (card_id, from_column_id, to_column_id) VALUES ($1, $2, $3)`, id, fromColumnID, columnID); err != nil {
+		return false, err
+	}
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 //#endregion

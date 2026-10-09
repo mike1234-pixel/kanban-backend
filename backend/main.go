@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"kanban-backend/internal/handlers"
-	"kanban-backend/internal/store"
+	"kanban/internal/handlers"
+	"kanban/internal/store"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
@@ -45,6 +45,7 @@ func main() {
 	mux.HandleFunc("GET /cards", cardHandler.ListCards)
 	mux.HandleFunc("GET /cards/{id}", cardHandler.GetCard)
 	mux.HandleFunc("PUT /cards/{id}", cardHandler.UpdateCard)
+	mux.HandleFunc("POST /cards/{id}/move", cardHandler.MoveCard)
 	mux.HandleFunc("DELETE /cards/{id}", cardHandler.DeleteCard)
 
 	columnHandler := &handlers.ColumnHandler{Store: dbStore, Validate: validate}

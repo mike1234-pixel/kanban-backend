@@ -1,0 +1,14 @@
+.boardToolbar { height: 52px; flex: 0 0 52px; display: flex; align-items: stretch; justify-content: space-between; padding: 0 42px; border-bottom: 1px solid #e9ebf0; border-top: 1px solid #eceef2; background: #fff; }
+.viewTabs, .toolbarRight { display: flex; align-items: center; gap: 17px; }
+.viewTabs { gap: 19px; }
+.viewTab, .viewTabActive, .filterButton { height: 100%; display: inline-flex; align-items: center; gap: 7px; border: 0; background: none; color: #9297a3; cursor: pointer; font-size: 10px; }
+.viewTabActive { color: #6252bc; font-weight: 600; border-bottom: 2px solid #7865dc; }
+.taskCount { color: #a0a4af; font-size: 10px; }
+.toolbarDivider { height: 16px; width: 1px; background: #eceef2; }
+.filterButton { height: 30px; gap: 7px; }
+.addColumnButton { height: 30px; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; border: 1px solid #e7e5f1; border-radius: 5px; background: #fff; color: #6252bc; cursor: pointer; font-size: 10px; font-weight: 600; }
+.addColumnButton span { font-size: 14px; }
+@media (max-width: 760px)  { .boardToolbar { padding: 0 19px; } }
+@media (max-width: 760px)  { .toolbarRight { gap: 9px; } }
+
+@media (max-width: 760px) { .filterButton > span:last-child, .taskCount, .toolbarDivider { display: none; } }

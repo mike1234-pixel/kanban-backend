@@ -2,13 +2,16 @@ package store
 
 import (
 	"database/sql"
-	"kanban-backend/internal/models"
+	"kanban/internal/models"
 )
 
 // #region Save Column
 func (s *PostgresStore) SaveColumn(col models.Column) error {
+
 	query := `INSERT INTO columns (id, board_id, title, position) VALUES ($1, $2, $3, $4)`
+
 	_, err := s.db.Exec(query, col.ID, col.BoardID, col.Title, col.Position)
+
 	return err
 }
 

@@ -1,4 +1,4 @@
-module kanban-backend
+module kanban
 
 go 1.26.0
 

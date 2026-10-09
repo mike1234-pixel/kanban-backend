@@ -27,6 +27,18 @@ func NewPostgresStore(connStr string) (*PostgresStore, error) {
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping postgres: %w", err)
 	}
+	if _, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS card_movements (
+			id BIGSERIAL PRIMARY KEY,
+			card_id UUID NOT NULL,
+			from_column_id UUID NOT NULL,
+			to_column_id UUID NOT NULL,
+			moved_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+		)
+	`); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("failed to create card movement history table: %w", err)
+	}
 
 	return &PostgresStore{db: db}, nil
 }

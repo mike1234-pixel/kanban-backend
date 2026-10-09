@@ -1,0 +1,14 @@
+.emptyWorkspace { padding: 30px; }
+.emptyArtwork { position: relative; width: 145px; height: 112px; margin-bottom: 26px; }
+.emptyArtwork span { position: absolute; display: grid; place-items: center; border: 1px solid #ebe8f7; border-radius: 13px; background: #fff; box-shadow: 0 10px 25px rgba(51,45,90,.07); }
+.emptyArtwork span:first-child { width: 66px; height: 66px; left: 7px; top: 27px; color: #a995e6; font-size: 28px; transform: rotate(-11deg); }
+.emptyArtwork span:nth-child(2) { width: 74px; height: 82px; left: 43px; top: 11px; color: #7e6dda; font-size: 31px; transform: rotate(4deg); }
+.emptyArtwork span:last-child { width: 51px; height: 51px; right: 2px; top: 48px; color: #83bdab; font-size: 25px; transform: rotate(12deg); }
+.emptyEyebrow { color: #999eab; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; margin-bottom: 12px; color: #8372d3; }
+.emptyWorkspace h1 { margin: 0; color: #292d3c; font-family: Manrope,sans-serif; font-size: 35px; line-height: 1.2; letter-spacing: -1.5px; }
+.emptyWorkspace p { max-width: 310px; margin: 14px 0 21px; color: #8f94a1; font-size: 12px; line-height: 1.65; }
+
+.primaryButton { min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; border: 0; border-radius: 5px; background: #7562d5; color: #fff; box-shadow: 0 3px 8px rgba(105,85,198,.18); cursor: pointer; font-size: 10px; font-weight: 600; transition: background .15s; }
+.primaryButton:hover { background: #6552c4; }
+.primaryButton:disabled { opacity: .6; cursor: wait; }
+.primaryButton span { font-size: 14px; }

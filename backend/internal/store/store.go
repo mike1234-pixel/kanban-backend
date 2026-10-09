@@ -1,7 +1,7 @@
 package store
 
 import (
-	"kanban-backend/internal/models"
+	"kanban/internal/models"
 )
 
 type Store interface {
@@ -10,6 +10,7 @@ type Store interface {
 	GetCards() ([]models.Card, error)
 	GetCardByID(id string) (models.Card, error)
 	UpdateCard(id string, updated models.Card) (bool, error)
+	MoveCard(id string, columnID string) (bool, error)
 	DeleteCard(id string) (bool, error)
 	//#endregion
 

@@ -1,1 +1,30 @@
+# Environment files and local overrides
 .env
+.env.*
+!.env.example
+!.env.*.example
+
+# JavaScript / TypeScript (frontend)
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.vite/
+.cache/
+
+# Go build and test artifacts
+/backend/kanban
+/backend/*.exe
+*.test
+*.out
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.idea/
